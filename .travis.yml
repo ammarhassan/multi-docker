@@ -1,0 +1,22 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t mammar0009/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run mammar0009/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t mammar0009/multi-client ./client
+  - docker build -t mammar0009/multi-nginx ./nginx
+  - docker build -t mammar0009/multi-server ./server
+  - docker build -t mammar0009/multi-worker ./worker
+
+  - echo "$DOCKER_PWD" | docker login -u "$DOCKER_ID" --password-stdin
+
+  - docker push mammar0009/multi-client
+  - docker push mammar0009/multi-nginx
+  - docker push mammar0009/multi-server
+  - docker push mammar0009/multi-worker
